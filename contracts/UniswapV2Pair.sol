@@ -128,8 +128,8 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     // 所有连续两个时刻之间的k值差值就是这段时间的手续费。
     // 参数为池子中的两种币的数值。
     //公式：Sm = ((√k2-√k1)*S1)/(5*(√k2+√k1))。
-    // 其中Sm为因流动性铸造给feeTo地址的激励，√k1是之前某个时刻的乘积，√k2为调用接口的参数的乘积，
-    // S1是总的ERC20的数量，保存再工厂合约里。5是由于流动性提供者能获得5/6的手续费而通过公式变形产生。
+    // 其中Sm为因流动性铸造给feeTo地址的激励，k1是之前某个时刻的乘积，k2为调用接口后的新乘积，
+    // S1是总的ERC20的数量，保存在工厂合约里。5是由于流动性提供者能获得5/6的手续费而通过公式变形产生。
     // if fee is on, mint liquidity equivalent to 1/6th of the growth in sqrt(k)
     function _mintFee(uint112 _reserve0, uint112 _reserve1) private returns (bool feeOn) {
         //查看工厂中的收取手续费的地址是否存在
@@ -155,7 +155,7 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
                     if (liquidity > 0) _mint(feeTo, liquidity);
                 }
             }
-        // 否则如果_kLast不等于0
+        // 否则如果feeOn是关着的，并且_kLast不等于0，则将_kLast设为0。
         } else if (_kLast != 0) {
             kLast = 0;
         }
