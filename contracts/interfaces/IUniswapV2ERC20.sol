@@ -1,4 +1,4 @@
-pragma solidity =0.7.6;
+pragma solidity >=0.5.0;
 
 interface IUniswapV2ERC20 {
     // 这两个event分别会在授权和转账的时候触发

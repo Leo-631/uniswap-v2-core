@@ -1,4 +1,4 @@
-pragma solidity =0.7.6;
+pragma solidity >=0.5.0;
 
 import './interfaces/IUniswapV2Factory.sol';
 import './UniswapV2Pair.sol';
@@ -39,16 +39,17 @@ contract UniswapV2Factory is IUniswapV2Factory {
         //提前检查Pool地址是否存在，不存在才继续创建pool
         require(getPair[token0][token1] == address(0), 'UniswapV2: PAIR_EXISTS'); // single check is sufficient
         //使用UniswapV2Pair的合约二进制字节码和token0、token1
-        // bytes memory bytecode = type(UniswapV2Pair).creationCode;
-        // bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+        bytes memory bytecode = type(UniswapV2Pair).creationCode;
+        bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         //内联汇编
-        // assembly {
-        //     pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
-        // }
+        assembly {
+            pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
         //uniswapV3版本使用的create2不在需要内联汇编，
         // 即solidity大于0.7.6版本后就不需要内联汇编，可以通过指定 slat 来使用 create2
         //这里传入的token0和token1就是排过序的。
-        pair = address(new UniswapV2Pair{salt: keccak256(abi.encode(token0, token1))}());
+        //本来打算换成V3的写法，结果由于UniswapV2ERC20.sol中的内联汇编需要用到0.5.16版本，所以这里也不能直接换V3版本的写法。
+        // pair = address(new UniswapV2Pair{salt: keccak256(abi.encode(token0, token1))}());
         IUniswapV2Pair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
